@@ -1,60 +1,92 @@
 import subprocess, select,sys
+__author__ = "Takashi SASAKi <takashi316@gmail.com>"
+__date__ = "2020/04/13"
+
+r"""A collection of classes to communicate with child processes.
+
+test
+"""
 
 class CommandIo:
-  def __init__(self, args):
-    self.popen = subprocess.Popen(args, 
+  __slots__ = ["_popen", "_stdinPoll", "_stdoutPoll", "_stderrPoll"]
+
+  """
+  class CommandIo is an alternative to subprocess.Popen.
+  It provides communicate() method to get line-by-line output of the child process.
+  """
+  def __init__(self, args: list):
+    """
+    :param args: list of strings representing command line
+    """
+    self._popen = subprocess.Popen(args, 
     					stdin=subprocess.PIPE, 
 					stdout=subprocess.PIPE,
 					stderr=subprocess.PIPE)
-    self.stdinPoll = select.poll()
-    self.stdinPoll.register(self.popen.stdin, select.POLLOUT)
-    self.stdoutPoll = select.poll()
-    self.stdoutPoll.register(self.popen.stdout, select.POLLIN)
-    self.stderrPoll = select.poll()
-    self.stderrPoll.register(self.popen.stderr, select.POLLIN)
+    self._stdinPoll = select.poll()
+    self._stdinPoll.register(self._popen.stdin, select.POLLOUT)
+    self._stdoutPoll = select.poll()
+    self._stdoutPoll.register(self._popen.stdout, select.POLLIN)
+    self._stderrPoll = select.poll()
+    self._stderrPoll.register(self._popen.stderr, select.POLLIN)
     
-  def communicate(self, inBytes = None, timeout = 0):
+  def communicate(self, inBytes :bytes  = None, timeout :int = 0):
+    """
+    :param inBytes: data fed to stdin of the child process
+    :param timeout: timeout milliseconds to wait for the response of child process
+    :return outs, errs: list of bytes read line-by-line from stdout and stderr of the child process by readline()
+    """
     if inBytes is not None:
-      if len(self.stdinPoll.poll(timeout)) > 0:
-        self.popen.stdin.write(inBytes)
-        self.popen.stdin.flush()
+      if len(self._stdinPoll.poll(timeout)) > 0:
+        self._popen.stdin.write(inBytes)
+        self._popen.stdin.flush()
       
     #print("reading from stdout")
     readFromStdout = []
-    while len(self.stdoutPoll.poll(timeout)) > 0:
-      line = self.popen.stdout.readline()
+    while len(self._stdoutPoll.poll(timeout)) > 0:
+      line = self._popen.stdout.readline()
       if line == b"": break
       readFromStdout.append(line)
 
     #print("reading from stderr")
     readFromStderr = []
-    while len(self.stderrPoll.poll(timeout)) > 0:
-      line = self.popen.stderr.readline()
+    while len(self._stderrPoll.poll(timeout)) > 0:
+      line = self._popen.stderr.readline()
       if line == b"": break
       readFromStderr.append(line)
     
     return (readFromStdout, readFromStderr)
 
-  def communicateRead(self, inBytes = None, timeout = 0):
+  def communicateRead(self, inBytes :bytes = None, timeout :int = 0):
+    """
+    :param inBytes: data fed to stdin of the child process
+    :param timeout: timeout milliseconds to wait for the response of child process
+    :return outs, errs: list of bytes read from stdout and stderr of the child process by readlines()
+    """
     if inBytes is not None:
-      if len(self.stdinPoll.poll(timeout)) > 0:
-        self.popen.stdin.write(inBytes)
-        self.popen.stdin.flush()
+      if len(self._stdinPoll.poll(timeout)) > 0:
+        self._popen.stdin.write(inBytes)
+        self._popen.stdin.flush()
       
     #print("reading from stdout")
     readFromStdout = []
-    if len(self.stdoutPoll.poll(timeout)) > 0:
-      readFromStdout = self.popen.stdout.read()
+    if len(self._stdoutPoll.poll(timeout)) > 0:
+      readFromStdout = self._popen.stdout.read()
 
     #print("reading from stderr")
     readFromStderr = []
-    if len(self.stderrPoll.poll(timeout)) > 0:
-      readFromStderr = self.popen.stderr.read()
+    if len(self._stderrPoll.poll(timeout)) > 0:
+      readFromStderr = self._popen.stderr.read()
     
     return (readFromStdout, readFromStderr)
 
-  def communicatePopen(self, inBytes = None, timeout = 0):
-    return self.popen.communicate(inBytes, timeout)
+  def communicatePopen(self, inBytes :bytes  = None, timeout :int = 0):
+    """
+    alias for Popen.communicate().
+    :param inBytes: data fed to stdin of the child process
+    :param timeout: timeout milliseconds to wait for the response of child process
+    :return outs, errs: return values of Popen.communicate()
+    """
+    return self._popen.communicate(inBytes, timeout)
 
 if __name__ == "__main__":
   commandIo = CommandIo(["ls"])
