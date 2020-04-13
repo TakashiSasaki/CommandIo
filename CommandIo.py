@@ -1,13 +1,17 @@
-import subprocess, select,sys
-__author__ = "Takashi SASAKi <takashi316@gmail.com>"
-__date__ = "2020/04/13"
-
 r"""A collection of classes to communicate with child processes.
 
-test
+This module allows you to spawn child processes,
+connect to their stdin/stdout/stderr and communicate with them
+for multiple times until they exit.
 """
 
-class CommandIo:
+__author__ = "Takashi SASAKI <takashi316@gmail.com>"
+__date__ = "2020/04/13"
+__version__ ="0.0.1.20200413"
+
+import subprocess, select,sys
+
+class CommandIo(object):
   __slots__ = ["_popen", "_stdinPoll", "_stdoutPoll", "_stderrPoll"]
 
   """

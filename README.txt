@@ -1,7 +1,12 @@
 Help on module CommandIo:
 
 NAME
-    CommandIo
+    CommandIo - A collection of classes to communicate with child processes.
+
+DESCRIPTION
+    This module allows you to spawn child processes,
+    connect to their stdin/stdout/stderr and communicate with them
+    for multiple times until they exit.
 
 CLASSES
     builtins.object
@@ -29,11 +34,14 @@ CLASSES
      |      :param timeout: timeout milliseconds to wait for the response of child process
      |      :return outs, errs: list of bytes read from stdout and stderr of the child process by readlines()
 
+VERSION
+    0.0.1.20200413
+
 DATE
     2020/04/13
 
 AUTHOR
-    Takashi SASAKi <takashi316@gmail.com>
+    Takashi SASAKI <takashi316@gmail.com>
 
 FILE
     /home/mobaxterm/command-io/CommandIo.py
