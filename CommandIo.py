@@ -9,7 +9,7 @@ __author__ = "Takashi SASAKI <takashi316@gmail.com>"
 __date__ = "2020/04/13"
 __version__ ="0.0.1.20200413"
 
-import subprocess, select,sys
+import subprocess, select, sys
 
 class CommandIo(object):
   __slots__ = ["_popen", "_stdinPoll", "_stdoutPoll", "_stderrPoll"]
@@ -25,7 +25,8 @@ class CommandIo(object):
     self._popen = subprocess.Popen(args, 
     					stdin=subprocess.PIPE, 
 					stdout=subprocess.PIPE,
-					stderr=subprocess.PIPE)
+					stderr=subprocess.PIPE,
+                                        bufsize=0)
     self._stdinPoll = select.poll()
     self._stdinPoll.register(self._popen.stdin, select.POLLOUT)
     self._stdoutPoll = select.poll()
