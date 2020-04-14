@@ -143,8 +143,9 @@ if __name__ == "__main__":
   print(out)
 
   commandIo = CommandIo(["telnet", "www.example.com", "80"])
-  out, err = commandIo.communicate(None, timeout = 1000)
+  out = commandIo.readlines(10, timeout = 1000)
   print(out)
-  out, err = commandIo.communicate(b'GET /\n', timeout = 1000)
+  commandIo.write(b'GET /\n')
+  out = commandIo.readlines(10, timeout = 1000)
   print(out)
 
