@@ -60,6 +60,39 @@ class CommandIo(object):
     
     return (readFromStdout, readFromStderr)
 
+  def write(self, b:bytes, timeout:int = 100):
+    if len(self._stdinPoll.poll(timeout)) > 0:
+      self._popen.stdin.write(b)
+      self._popen.stdin.flush()
+    else:
+      raise RuntimeError("Failed to write bytes to stdin of the child process.")
+
+  def readlines(self, nLines: int, timeout:int):
+    """
+    :param nLines: the number of lines to wait for at least.
+    :param timeout: max milliseconds to wait for the first line.
+    :return : list of bytes read line-by-line from stdout of the child process.
+    """
+    currentTimeout = 1
+    readFromStdout = []
+
+    while True:
+      #print("CommandIo.read: ", currentTimeout)
+      pollResult = self._stdoutPoll.poll(currentTimeout)
+      #print("CommandIo.read: ", pollResult)
+      if len(pollResult) == 0:
+        if currentTimeout >= timeout:
+          return readFromStdout
+        currentTimeout = min(timeout, currentTimeout*2)
+        continue
+      line = self._popen.stdout.readline()
+      #print("CommandIo.read: ", line)
+      if line == b"": 
+        return readFromStdout
+      readFromStdout.append(line)
+      if len(readFromStdout) >= nLines:
+        return readFromStdout
+
   def communicateRead(self, inBytes :bytes = None, timeout :int = 0):
     """
     :param inBytes: data fed to stdin of the child process
