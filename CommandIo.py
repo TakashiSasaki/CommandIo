@@ -126,6 +126,10 @@ class CommandIo(object):
     return self._popen.communicate(inBytes, timeout)
 
 if __name__ == "__main__":
+  commandIo = CommandIo(["cat"])
+  out = commandIo.readlines(1, 100)
+  print(out)
+
   commandIo = CommandIo(["ls"])
   out, err = commandIo.communicate(None, 100)
   print(out)
